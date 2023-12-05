@@ -1,0 +1,21 @@
+{
+  "database": {
+    "mongo": {
+      "uri": "mongodb://localhost:27017/your_database_name"
+    },
+    "redis": {
+      "uri": "redis://localhost:6379/0"
+    }
+  },
+  "file_upload": {
+    "extensions": [
+      "docx",
+      "pdf",
+      "doc"
+    ],
+    "filesize_max": 10.0
+  }
+}
+
+
+
