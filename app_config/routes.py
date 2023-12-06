@@ -3,7 +3,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 
 motor_client = AsyncIOMotorClient("mongodb://localhost:27017")
-database_name = "tasks_collection"  # Get the database name from your settings.json
+database_name = "tasks_collection" 
 database = motor_client[database_name]
 
 
