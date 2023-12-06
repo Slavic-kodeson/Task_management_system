@@ -1,4 +1,4 @@
-from Task_management_system.app_config.configure import get_application
+from app_config.configure import get_application
 
 task_management_system = get_application()
 
