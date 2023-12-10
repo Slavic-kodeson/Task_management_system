@@ -1,7 +1,12 @@
 {
-  "database": {
-    "MONGO_URL": "mongodb://localhost",
-    "REDIS_URL": "redis://localhost"
+  "database":
+  {"HOST": "0.0.0.0",
+  "PORT": 1500,
+  "WORKERS": 1,
+  "FAST": false,
+  "DEBUG": false,
+  "MONGO_URL": "mongodb://0.0.0.0",
+  "REDIS_URL": "redis://0.0.0.0"
   },
   "file_upload": {
     "extensions": [
@@ -10,8 +15,7 @@
       "doc"
     ],
     "filesize_max": 10.0
-  },
-  "database_name": "tasks_collection"
+  }
 }
 
 
