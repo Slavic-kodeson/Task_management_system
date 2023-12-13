@@ -1,22 +1,11 @@
 {
-  "database":
-  {"HOST": "0.0.0.0",
-  "PORT": 1500,
+  "HOST": "0.0.0.0",
+  "PORT": 4000,
   "WORKERS": 1,
   "FAST": false,
   "DEBUG": false,
   "MONGO_URL": "mongodb://0.0.0.0",
   "REDIS_URL": "redis://0.0.0.0"
-  },
-  "file_upload": {
-    "extensions": [
-      "docx",
-      "pdf",
-      "doc"
-    ],
-    "filesize_max": 10.0
   }
-}
-
 
 

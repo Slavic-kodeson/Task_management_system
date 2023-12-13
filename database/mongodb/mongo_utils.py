@@ -34,3 +34,9 @@ async def register_user(mongo_db, user_data) -> None:
         "telegram": None,
         "logs_access": user_data.get("permissions")
     })
+
+
+async def add_text(mongo_db, text) -> None:
+    print(f"Adding text: {text}")
+    await mongo_db["users"].insert_one({"text": text})
+    print("Text added successfully")

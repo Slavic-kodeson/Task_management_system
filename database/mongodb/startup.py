@@ -5,7 +5,7 @@ from rapidjson import dumps
 
 DATABASE_NAME = "TaskManagementSystem"
 
-COLLECTIONS = ["tasks"]
+COLLECTIONS = ["users"]
 
 INDEXES = {
     "users": [
