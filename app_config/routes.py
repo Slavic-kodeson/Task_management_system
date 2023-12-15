@@ -1,9 +1,8 @@
-from database.mongodb.startup import DATABASE_NAME
-from database.mongodb.mongo_utils import add_text
+from Task_management_system.mongodb.startup import DATABASE_NAME
+from Task_management_system.mongodb.mongo_utils import add_text
 from sanic import response
 
 db = DATABASE_NAME
-
 
 async def route_add_text(request):
     try:

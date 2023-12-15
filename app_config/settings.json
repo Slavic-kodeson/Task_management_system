@@ -1,11 +1,9 @@
 {
-  "HOST": "0.0.0.0",
+  "HOST": "localhost",
   "PORT": 4000,
   "WORKERS": 1,
   "FAST": false,
   "DEBUG": false,
-  "MONGO_URL": "mongodb://0.0.0.0",
-  "REDIS_URL": "redis://0.0.0.0"
-  }
-
-
+  "MONGO_URL": "mongodb://localhost:27017/",
+  "REDIS_URL": "redis://localhost:6379"
+}

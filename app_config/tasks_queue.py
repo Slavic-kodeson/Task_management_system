@@ -1,9 +1,7 @@
-import asyncio
+# app_config/tasks_queue.py
+from Task_management_system.app_config.task_manager import TaskManager
 
-task_queue = asyncio.Queue()
-
+task_manager = TaskManager()
 
 async def process_tasks():
-    while True:
-        task = await task_queue.get()
-        task_queue.task_done()
+    await task_manager.process_tasks()
