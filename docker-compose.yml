@@ -2,10 +2,10 @@ version: '3'
 services:
   db_redis:
     build:
-      context: redis
+      context: redisdb
       dockerfile: ../docker/Redis/DockerFile
     ports:
-      - "6380:6379"
+      - "6379:6379"
     networks:
       - backend
 

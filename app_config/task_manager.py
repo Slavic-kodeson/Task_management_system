@@ -1,5 +1,6 @@
 import asyncio
 
+
 class TaskManager:
     def __init__(self):
         self.task_queue = asyncio.Queue()
@@ -29,5 +30,6 @@ class TaskManager:
         status = self.task_statuses.get(task_id, "UNKNOWN")
         failure_reason = self.task_statuses.get(task_id + "_failure_reason", None)
         return status, failure_reason
+
 
 task_manager = TaskManager()
