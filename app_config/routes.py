@@ -1,4 +1,3 @@
-from mongodb.startup import DATABASE_NAME
 from mongodb.mongo_utils import add_text
 from app_config.task_manager import task_manager
 from sanic import response
@@ -11,15 +10,11 @@ from utils.raise_utils import json_response
 from utils.auth_hash import generate_user_id
 from utils.token_utils import generate_auth_user_pack, generate_registration_code
 
-db = DATABASE_NAME
-
 
 async def route_get_task_status(request):
     try:
-        # Получение id задачи из запроса
         task_id = request.args.get("task_id")
 
-        # Получение статуса и причины неудачи из TaskManager
         task_status, failure_reason = task_manager.get_task_status(task_id)
 
         return response.json({
@@ -34,9 +29,14 @@ async def route_get_task_status(request):
 
 async def route_add_text(request):
     try:
-        text_add = request.body.decode('utf-8')
+        body = request.body
 
-        await add_text(db, text_add)
+        if not body:
+            return response.json({"error": "Empty text provided"}, status=400)
+
+        text_add = body.decode('utf-8')
+
+        await add_text(request.app, text_add)
 
         return response.json({
             "message": "Text added successfully",
@@ -47,8 +47,8 @@ async def route_add_text(request):
         return response.json({"error": str(err)}, status=500)
 
 
-async def add_response_headers(_, response):
-    response.headers["Accept"] = "application/json"
+async def add_response_headers(_, responses):
+    responses.headers["Accept"] = "application/json"
 
 
 async def login_route(request):

@@ -1,3 +1,6 @@
+from mongodb.startup import DATABASE_NAME
+
+
 async def exists_user(mongo_db, search) -> bool:
     result = await mongo_db["users"].find_one(search, {"id": 1})
     return result is not None
@@ -36,7 +39,12 @@ async def register_user(mongo_db, user_data) -> None:
     })
 
 
-async def add_text(mongo_db, text) -> None:
-    print(f"Adding text: {text}")
-    await mongo_db["users"].insert_one({"text": text})
-    print("Text added successfully")
+async def add_text(sanic_app, text) -> None:
+    try:
+        print(f"Adding text: {text}")
+        users_collection = sanic_app.ctx.mongo[DATABASE_NAME]["users"]
+        await users_collection.insert_one({"text": text})
+        print("Text added successfully")
+    except Exception as e:
+        print(f"Error adding text: {str(e)}")
+        raise
