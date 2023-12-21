@@ -1,7 +1,10 @@
-from mongodb.mongo_utils import add_text
+from sanic import Unauthorized
+import uuid
+from mongodb.startup import DATABASE_NAME
+from mongodb.mongo_utils import add_text_with_id, add_file_with_id
 from app_config.task_manager import task_manager
 from sanic import response
-from authentification import functionality
+from authentication import functionality
 import mongodb.mongo_utils as mongo_db
 import redisdb.redis_utils as redis_db
 import utils.route_signature as routes_sign
@@ -11,24 +14,24 @@ from utils.auth_hash import generate_user_id
 from utils.token_utils import generate_auth_user_pack, generate_registration_code
 
 
-async def route_get_task_status(request):
-    try:
-        task_id = request.args.get("task_id")
-
-        task_status, failure_reason = task_manager.get_task_status(task_id)
-
-        return response.json({
-            "task_id": task_id,
-            "status": task_status,
-            "failure_reason": failure_reason
-        })
-
-    except Exception as err:
-        return response.json({"error": str(err)}, status=500)
+async def get_user_data(request):
+    user_id = request.headers.get('user_id')
+    session_id = request.headers.get('session_id')
+    token = request.headers.get('token')
+    if user_id is None or session_id is None or token is None:
+        raise Unauthorized("User Not Authorized")
+    user_data = await redis_db.check_user_token(request.app.ctx.redis, user_id, session_id, token)
+    return user_data
 
 
 async def route_add_text(request):
     try:
+
+        user_data = await get_user_data(request)
+
+        if user_data is None:
+            return response.json({"error": "User not authenticated"}, status=401)
+
         body = request.body
 
         if not body:
@@ -36,19 +39,89 @@ async def route_add_text(request):
 
         text_add = body.decode('utf-8')
 
-        await add_text(request.app, text_add)
+        task_id = str(uuid.uuid4())
+
+        await add_text_with_id(request.app.ctx.mongo[DATABASE_NAME], task_id, text_add)
 
         return response.json({
+            "task_id": task_id,
             "message": "Text added successfully",
             "added_text": text_add,
         })
 
-    except Exception as err:
-        return response.json({"error": str(err)}, status=500)
+    except Unauthorized as err:
+        return response.json({"error": str(err)}, status=401)
+    except Exception as e:
+        return response.json({"error": str(e)}, status=500)
+
+
+async def add_file_route(request):
+    try:
+
+        user_data = await get_user_data(request)
+
+        if user_data is None:
+            raise Unauthorized("User not authenticated")
+
+        file_field = request.files.get('file')
+
+        if file_field is None:
+            print("No file provided")
+            return response.json({"error": "No file provided"}, status=400)
+
+        file_content = file_field.body
+        file_id = str(uuid.uuid4())
+
+        await add_file_with_id(mongo_db=mongo_db, file_id=file_id, file_content=file_content)
+
+        return response.json({
+            "file_id": file_id,
+            "message": "File added successfully",
+        })
+
+    except Unauthorized as err:
+        return response.json({"error": str(err)}, status=401)
+
+    except Exception as e:
+        print(f"Error processing request: {str(e)}")
+        return response.json({"error": str(e)}, status=500)
+
+
+async def find_text_by_id(request, task_id):
+    try:
+
+        user_data = await get_user_data(request)
+
+        if user_data is None:
+            return response.json({"error": "User not authenticated"}, status=401)
+
+        result = await request.app.ctx.mongo[DATABASE_NAME]["users"].find_one({"task_id": task_id})
+
+        if result:
+            return response.json({
+                "text_id": result.get("task_id"),
+                "text": result.get("text"),
+            })
+        else:
+            return response.json({"error": "Text not found"}, status=404)
+
+    except Unauthorized as err:
+        return response.json({"error": str(err)}, status=401)
+    except Exception as e:
+        return response.json({"error": str(e)}, status=500)
+
+
+async def route_get_text(request, task_id):
+    return await find_text_by_id(request, task_id)
 
 
 async def add_response_headers(_, responses):
     responses.headers["Accept"] = "application/json"
+
+
+async def route_get_task_status(request, task_id):
+    status, failure_reason = await task_manager.get_task_status(task_id)
+    return response.json({"task_id": task_id, "status": status, "failure_reason": failure_reason})
 
 
 async def login_route(request):
