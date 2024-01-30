@@ -2,6 +2,7 @@ from pymongo.errors import CollectionInvalid
 from motor.motor_asyncio import AsyncIOMotorClient
 import redis.asyncio as redis
 from rapidjson import dumps
+from tasks_handling.task_manager import TaskManager
 
 DATABASE_NAME = "TaskManagementSystem"
 
@@ -66,3 +67,7 @@ async def initialize_database(sanic_app):
                                                       "role": "admin"}))
 
     print(f"Task Manager [STARTUP]: Database initialized.")
+
+    task_manager = TaskManager(sanic_app.ctx.redis)
+    sanic_app.ctx.task_manger = task_manager
+    sanic_app.add_task(task_manager.process_tasks())

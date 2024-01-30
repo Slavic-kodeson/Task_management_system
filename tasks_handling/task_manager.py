@@ -1,9 +1,10 @@
-from app_config.tasks_queue import task_queue
+from tasks_handling.tasks_queue import task_queue
+from redisdb.redis_utils import update_task_status, add_text_with_id
 
 
 class TaskManager:
-    def __init__(self):
-        self.task_statuses = {}
+    def __init__(self, redis):
+        self.redis = redis
 
     async def process_tasks(self):
         while True:
@@ -13,21 +14,18 @@ class TaskManager:
     async def execute_task(self, task):
         task_type = task.get("type")
         task_id = task.get("task_id")
+        redis_db = task.get("redis_db", self.redis)
 
         try:
-            self.task_statuses[task_id] = {"status": "IN PROGRESS", "failure_reason": None}
+            print(f"Processing task with task_id: {task_id}")
+            await update_task_status(redis_db, task_id, "IN PROGRESS", None)
 
             if task_type == "add_text":
-                from redisdb.redis_utils import add_text_with_id
-                await add_text_with_id(task["redis_db"], task_id, task["text"])
-            elif task_type == "add_file":
-                from redisdb.redis_utils import add_file_with_id
-                await add_file_with_id(task["redis_db"], task_id, task["file_content"])
+                await add_text_with_id(redis_db, task_id, task["text"])
 
         except Exception as e:
-            self.task_statuses[task_id] = {"status": "FAILED", "failure_reason": str(e)}
+            print(f"Processing failed for task_id {task_id}: {str(e)}")
+            await update_task_status(redis_db, task_id, "FAILED", str(e))
         else:
-            self.task_statuses[task_id] = {"status": "DONE", "failure_reason": None}
-
-
-task_manager = TaskManager()
+            print(f"Processing successful for task_id {task_id}")
+            await update_task_status(redis_db, task_id, "DONE", None)
